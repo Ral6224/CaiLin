@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="材林数据管理：备份、恢复、导入与初始设置。">
+  <meta name="theme-color" content="#f2eee5" id="themeColor">
+  <title>数据管理 · 材林</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="材林首页">
+        <span class="brand-mark" aria-hidden="true">林</span>
+        <span class="brand-text">
+          <strong>材林</strong>
+          <small>素材之森林</small>
+        </span>
+      </a>
+      <div class="header-actions">
+        <a class="header-link" href="/">素材库</a>
+        <button class="theme-toggle" type="button" id="themeToggle" data-theme-toggle aria-label="切换到深色模式">深色</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container data-page">
+    <section class="data-hero" aria-labelledby="dataTitle">
+      <div class="data-hero-copy">
+        <p class="eyebrow">数据管理</p>
+        <h1 id="dataTitle">备份与迁移</h1>
+        <p class="lead">把素材、配置和备份文件收在一处。需要时，整座森林可以装进一个 zip。</p>
+      </div>
+      <div class="data-summary" aria-label="当前数据概览">
+        <div class="summary-item">
+          <strong id="dataMaterialCount">—</strong>
+          <span>则素材</span>
+        </div>
+        <div class="summary-item">
+          <strong id="dataPeopleCount">—</strong>
+          <span>位人物</span>
+        </div>
+        <div class="summary-item">
+          <strong id="backupCount">—</strong>
+          <span>份备份</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="data-section" aria-labelledby="backupTitle">
+      <div class="data-section-head">
+        <p class="eyebrow">01 / 备份与导入</p>
+        <h2 id="backupTitle">保存，或者换一个地方</h2>
+        <p class="data-section-note">备份会打包全部素材、配置和当前主题，保存在服务器的 backup 文件夹，同时出现在下方列表中。</p>
+      </div>
+      <div class="data-section-body">
+        <div class="data-actions">
+          <button class="btn btn-primary" type="button" id="createBackup">立即备份</button>
+          <button class="btn btn-secondary" type="button" id="importBackup">导入备份</button>
+          <input id="importFile" type="file" accept=".zip,application/zip" hidden>
+        </div>
+        <p class="section-help">导入会先读取压缩包并检查重复素材，再决定覆盖还是差量合并。单个文件最大 24 MB。</p>
+      </div>
+    </section>
+
+    <section class="data-section" aria-labelledby="filesTitle">
+      <div class="data-section-head">
+        <p class="eyebrow">02 / 备份文件</p>
+        <h2 id="filesTitle">留在服务器上的副本</h2>
+        <p class="data-section-note">可以下载到本机，也可以直接恢复或删除。恢复和删除都需要再次确认。</p>
+      </div>
+      <div class="data-section-body">
+        <div class="backup-list-head">
+          <p id="backupSummary">正在读取备份…</p>
+          <button class="text-button" type="button" id="refreshBackups">刷新</button>
+        </div>
+        <div class="backup-list" id="backupList"></div>
+        <div class="backup-empty" id="backupEmpty" hidden>
+          <p class="empty-title">还没有备份文件</p>
+          <p>点击“立即备份”，生成第一份 zip。</p>
+        </div>
+        <div class="backup-empty" id="backupError" hidden>
+          <p class="empty-title">备份列表读取失败</p>
+          <p id="backupErrorText">请确认服务已启动。</p>
+          <button class="btn btn-secondary" type="button" id="retryBackups">重新加载</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="data-section danger-section" aria-labelledby="resetTitle">
+      <div class="data-section-head">
+        <p class="eyebrow">03 / 初始状态</p>
+        <h2 id="resetTitle">从头开始</h2>
+        <p class="data-section-note">清空当前所有素材，并重新写入内置的 8 则模板素材。已经生成的备份文件不会被删除。</p>
+      </div>
+      <div class="data-section-body">
+        <button class="btn btn-danger-solid" type="button" id="resetData">全部恢复初始设置</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>材林 · 素材之森林 · 数据留在本机</p>
+      <p><a class="footer-link" href="/">返回素材库</a></p>
+    </div>
+  </footer>
+
+  <dialog class="modal confirm-modal" id="confirmDialog" aria-labelledby="confirmTitle">
+    <div class="confirm-body">
+      <p class="modal-kicker" id="confirmKicker">请确认</p>
+      <h2 id="confirmTitle">确认操作</h2>
+      <p class="confirm-message" id="confirmMessage"></p>
+      <p class="confirm-detail" id="confirmDetail" hidden></p>
+    </div>
+    <div class="modal-foot confirm-foot">
+      <button class="btn btn-quiet" type="button" id="confirmCancel">取消</button>
+      <span class="foot-spacer"></span>
+      <button class="btn btn-danger" type="button" id="confirmAlternate" hidden></button>
+      <button class="btn btn-primary" type="button" id="confirmAccept">确认</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="/theme-ui.js" defer></script>
+  <script src="/data.js" defer></script>
+</body>
+</html>

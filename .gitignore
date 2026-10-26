@@ -1,0 +1,4 @@
+run/
+logs/
+data/*.tmp
+backup/

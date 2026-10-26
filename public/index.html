@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="材林——素材之森林：归档人物、事迹、语录、精神、话题与关键词。">
+  <meta name="theme-color" content="#f2eee5" id="themeColor">
+  <title>材林 · 素材之森林</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="材林首页">
+        <span class="brand-mark" aria-hidden="true">林</span>
+        <span class="brand-text">
+          <strong>材林</strong>
+          <small>素材之森林</small>
+        </span>
+      </a>
+      <div class="header-actions">
+        <span class="header-note">本地存储 · 随时增改</span>
+        <a class="header-link" href="/data.html">数据</a>
+        <button class="theme-toggle" type="button" id="themeToggle" data-theme-toggle aria-label="切换到深色模式">深色</button>
+        <button class="btn btn-primary" type="button" data-open-create>新增素材</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="masthead" aria-labelledby="pageTitle">
+      <div class="masthead-copy">
+        <p class="eyebrow">材林 · 素材之森林</p>
+        <h1 id="pageTitle">把值得写的人，<br>留在纸上。</h1>
+        <p class="lead">人物、事迹、语录、精神、话题与关键词，集中归档，随取随用。</p>
+      </div>
+      <div class="stats-panel" aria-label="素材统计">
+        <p class="stats-title">素材总览</p>
+        <div class="stats-row">
+          <div class="stat">
+            <strong id="statMaterials">0</strong>
+            <span>则素材</span>
+          </div>
+          <div class="stat">
+            <strong id="statPeople">0</strong>
+            <span>位人物</span>
+          </div>
+          <div class="stat">
+            <strong id="statTopics">0</strong>
+            <span>个话题</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="材林素材库">
+      <aside class="sidebar">
+        <div class="filter-group">
+          <div class="filter-heading">
+            <span>按话题</span>
+            <button class="text-button" type="button" id="clearFilters">重置</button>
+          </div>
+          <div class="filter-list" id="topicFilters"></div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-heading">
+            <span>按人物</span>
+          </div>
+          <div class="filter-list filter-people" id="personFilters"></div>
+        </div>
+        <p class="sidebar-note">素材保存在本机 data 目录中的 JSON 文件里，可随时备份。</p>
+      </aside>
+
+      <div class="main-panel">
+        <div class="toolbar">
+          <label class="search-field" for="searchInput">
+            <span class="visually-hidden">搜索素材</span>
+            <input id="searchInput" type="search" placeholder="搜索人物、事迹、语录或关键词" autocomplete="off">
+          </label>
+          <label class="sort-field" for="sortSelect">
+            <span>排序</span>
+            <select id="sortSelect">
+              <option value="updated">最近更新</option>
+              <option value="person">人物姓名</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="result-bar">
+          <p id="resultCount" aria-live="polite">正在读取素材…</p>
+          <p class="result-hint">点击卡片查看完整素材</p>
+        </div>
+
+        <div class="material-grid" id="materialGrid"></div>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <p class="empty-title">没有找到匹配的素材</p>
+          <p>换一个关键词，或重置筛选条件后再试。</p>
+          <button class="btn btn-secondary" type="button" id="emptyReset">重置筛选</button>
+        </div>
+
+        <div class="load-error" id="loadError" hidden>
+          <p id="loadErrorText">素材读取失败，请确认服务已启动。</p>
+          <button class="btn btn-secondary" type="button" id="retryLoad">重新加载</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>材林 · 素材之森林 · 为每一次写作留下可靠的依据</p>
+      <p>数据保存在本机，不上传网络</p>
+    </div>
+  </footer>
+
+  <dialog class="modal form-modal editor-modal" id="materialDialog" aria-labelledby="formDialogTitle">
+    <form id="materialForm" novalidate>
+      <div class="modal-head editor-head">
+        <div>
+          <p class="modal-kicker">素材编辑器</p>
+          <h2 id="formDialogTitle">新增素材</h2>
+        </div>
+        <div class="editor-head-actions">
+          <span class="editor-state" id="editorState">新素材</span>
+          <button class="btn btn-quiet" type="button" data-close-dialog>关闭</button>
+        </div>
+      </div>
+      <div class="modal-body editor-body">
+        <input type="hidden" name="id">
+        <div class="editor-layout">
+          <div class="editor-main">
+            <p class="form-error" id="formError" role="alert" hidden></p>
+            <div class="editor-title-row">
+              <label class="editor-title-field">
+                <span class="editor-field-label">人物 <em>必填</em></span>
+                <input class="editor-title-input" name="person" type="text" maxlength="40" placeholder="人物姓名" required autocomplete="off">
+              </label>
+              <label class="editor-identity-field">
+                <span class="editor-field-label">身份</span>
+                <input name="identity" type="text" maxlength="80" placeholder="如：北宋文学家" autocomplete="off">
+              </label>
+            </div>
+
+            <div class="md-editor">
+              <div class="md-head">
+                <div>
+                  <span class="field-label">素材正文</span>
+                  <span class="md-hint">支持 Markdown</span>
+                </div>
+                <div class="md-tabs" role="tablist" aria-label="编辑模式">
+                  <button class="is-active" type="button" role="tab" aria-selected="true" data-editor-mode="write">编写</button>
+                  <button type="button" role="tab" aria-selected="false" data-editor-mode="preview">预览</button>
+                </div>
+              </div>
+              <div class="md-toolbar" role="toolbar" aria-label="正文格式工具">
+                <button type="button" data-format="heading" title="插入小标题">标题</button>
+                <span class="toolbar-divider" aria-hidden="true"></span>
+                <button type="button" data-format="bold" title="粗体（Ctrl+B）"><strong>粗体</strong></button>
+                <button type="button" data-format="italic" title="斜体（Ctrl+I）"><em>斜体</em></button>
+                <span class="toolbar-divider" aria-hidden="true"></span>
+                <button type="button" data-format="quote" title="引用段落">引用</button>
+                <button type="button" data-format="ul" title="无序列表">无序列表</button>
+                <button type="button" data-format="ol" title="有序列表">有序列表</button>
+                <span class="toolbar-divider" aria-hidden="true"></span>
+                <button type="button" data-format="link" title="插入链接">链接</button>
+                <button type="button" data-format="hr" title="插入分隔线">分隔线</button>
+              </div>
+              <textarea class="md-textarea" id="deedsEditor" name="deeds" maxlength="20000" aria-label="素材正文" placeholder="在这里写人物事迹、关键细节与可用的写作角度。&#10;&#10;空一行分段；可用工具栏添加标题、引用、列表和链接。"></textarea>
+              <div class="md-preview rich-text" id="deedsPreview" hidden></div>
+              <div class="md-foot">
+                <span id="editorCount">0 字</span>
+                <span>Ctrl+B 粗体　Ctrl+I 斜体　Ctrl+S 保存</span>
+              </div>
+            </div>
+          </div>
+
+          <aside class="editor-aside" aria-label="语录与归档信息">
+            <section class="aside-block">
+              <div class="aside-title">
+                <h3>语录</h3>
+                <span>可引用原话</span>
+              </div>
+              <label class="field">
+                <span class="field-label">代表语录</span>
+                <textarea name="quote" rows="4" maxlength="1200" placeholder="可直接引用的话，可分行记录多句。"></textarea>
+              </label>
+              <label class="field">
+                <span class="field-label">语录出处</span>
+                <input name="source" type="text" maxlength="120" placeholder="如：《定风波》">
+              </label>
+            </section>
+
+            <section class="aside-block">
+              <div class="aside-title">
+                <h3>精神品质</h3>
+              </div>
+              <label class="field">
+                <textarea name="spirit" rows="3" maxlength="1200" placeholder="概括人物最值得书写的精神内核。"></textarea>
+              </label>
+            </section>
+
+            <section class="aside-block">
+              <div class="aside-title">
+                <h3>归档标签</h3>
+              </div>
+              <label class="field">
+                <span class="field-label">适用话题</span>
+                <input name="topics" type="text" maxlength="300" placeholder="逆境，担当，家国情怀">
+                <span class="field-hint">用逗号分隔，最多 12 个</span>
+              </label>
+              <label class="field">
+                <span class="field-label">关键词</span>
+                <input name="keywords" type="text" maxlength="500" placeholder="东坡，赤壁，贬谪">
+                <span class="field-hint">用逗号分隔，最多 20 个</span>
+              </label>
+            </section>
+          </aside>
+        </div>
+      </div>
+      <div class="modal-foot editor-foot">
+        <p class="editor-foot-note">事迹、语录、精神至少填写一项</p>
+        <span class="foot-spacer"></span>
+        <button class="btn btn-quiet" type="button" data-close-dialog>取消</button>
+        <button class="btn btn-primary" type="submit" id="saveButton">保存素材</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal detail-modal" id="detailDialog" aria-labelledby="detailPerson">
+    <div class="modal-head">
+      <div>
+        <p class="modal-kicker">人物档案</p>
+        <h2 id="detailPerson">素材详情</h2>
+        <p class="detail-identity" id="detailIdentity"></p>
+      </div>
+      <button class="btn btn-quiet" type="button" id="closeDetail">关闭</button>
+    </div>
+    <div class="modal-body detail-body">
+      <p class="detail-updated" id="detailUpdated"></p>
+      <blockquote class="detail-quote" id="detailQuoteBlock">
+        <p id="detailQuote"></p>
+        <cite id="detailSource"></cite>
+      </blockquote>
+      <section class="detail-section" id="detailDeedsSection">
+        <h3>人物事迹</h3>
+        <div class="rich-text" id="detailDeeds"></div>
+      </section>
+      <section class="detail-section" id="detailSpiritSection">
+        <h3>精神品质</h3>
+        <p id="detailSpirit"></p>
+      </section>
+      <section class="detail-section" id="detailTopicsSection">
+        <h3>适用话题</h3>
+        <div class="tag-list" id="detailTopics"></div>
+      </section>
+      <section class="detail-section" id="detailKeywordsSection">
+        <h3>关键词</h3>
+        <div class="tag-list" id="detailKeywords"></div>
+      </section>
+    </div>
+    <div class="modal-foot detail-foot">
+      <button class="btn btn-danger" type="button" id="deleteDetail">删除</button>
+      <span class="foot-spacer"></span>
+      <button class="btn btn-secondary" type="button" id="editDetail">编辑素材</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="/theme-ui.js" defer></script>
+  <script src="/app.js" defer></script>
+</body>
+</html>
